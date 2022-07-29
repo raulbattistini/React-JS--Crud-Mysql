@@ -9,6 +9,7 @@ import Axios from "axios";
 import produce from "immer";
 import { api } from "../../services/api";
 import { Form, Formik } from "formik";
+import { CardAction, TState, useCard } from "../../contexts/CardContext";
 
 export interface IValues {
   id: number;
@@ -31,8 +32,8 @@ interface IList {
 }
 
 export default function FormDialog(props: IList) {
-
-//  states
+  const { state, dispatch } = useCard();
+  //  states
   const [editValues, setEditValues] = useState({
     id: props.id,
     name: props.title,
@@ -42,8 +43,6 @@ export default function FormDialog(props: IList) {
   const [open, setOpen] = React.useState(false);
   const [values, setValues] = useState([]);
   const [postData, setPostData] = useState([]);
-
-
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -62,7 +61,7 @@ export default function FormDialog(props: IList) {
       id: values.id,
       name: values.name,
       cost: values.cost,
-      category: values.category
+      category: values.category,
     };
     const res = await api.put(`/posts/${id}`, updatePost);
   };
@@ -87,14 +86,19 @@ export default function FormDialog(props: IList) {
     loadPost();
   };
 
-  const handleSubmit = async (values: IValues) => {
-    const addPost = {
-      id: values.id,
-      name: values.name,
-      cost: values.cost,
-      category: values.category
-    };
-    api.post("/api/game", addPost);
+  const handleSubmit = async (name: string, cost: string, category: string) => {
+    dispatch({
+      type: CardAction.setName,
+      payload: name
+    })
+    dispatch({
+      type: CardAction.setCost,
+      payload: cost
+    })
+    dispatch({
+      type: CardAction.setCategory,
+      payload: category
+    })
   };
 
   return (
@@ -104,10 +108,11 @@ export default function FormDialog(props: IList) {
         onClose={handleClose}
         aria-labelledby="form-dialog-title"
       >
-        <Formik
-          initialValues={{}} //criar state pra armazenar o que esta no objeto segundo o id
-          onSubmit={() => {}}
-        >
+        <Formik initialValues={{
+          name: "",
+          cost: "",
+          category: ""
+        }} onSubmit={(state: TState) => handleSubmit(state.name, state.cost, state.category)}>
           {({ values, errors, touched, handleChange }) => {
             return (
               <Form>
@@ -118,6 +123,7 @@ export default function FormDialog(props: IList) {
                     margin="dense"
                     id="id"
                     label="id"
+                    value={props.id}
                     defaultValue={props.id}
                     type="text"
                     fullWidth
@@ -127,6 +133,7 @@ export default function FormDialog(props: IList) {
                     margin="dense"
                     id="name"
                     label="Nome do jogo"
+                    value={props.title}
                     defaultValue={props.title}
                     type="text"
                     onChange={handleChange}
@@ -137,6 +144,7 @@ export default function FormDialog(props: IList) {
                     margin="dense"
                     id="cost"
                     label="preço"
+                    value={props.cost}
                     defaultValue={props.cost}
                     type="number"
                     onChange={handleChange}
@@ -147,6 +155,7 @@ export default function FormDialog(props: IList) {
                     margin="dense"
                     id="category"
                     label="Categoria"
+                    value={props.category}
                     defaultValue={props.category}
                     type="text"
                     onChange={handleChange}
@@ -157,16 +166,10 @@ export default function FormDialog(props: IList) {
                   <Button onClick={handleClose} color="primary">
                     Cancel
                   </Button>
-                  <Button
-                    color="primary"
-                    onClick={(id) => remove(id)}
-                  >
+                  <Button color="primary" onClick={() => remove(props.id)}>
                     Excluir
                   </Button>
-                  <Button
-                    color="primary"
-                    type="submit"
-                  >
+                  <Button color="primary" type="submit">
                     Salvar
                   </Button>
                 </DialogActions>
