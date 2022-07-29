@@ -1,5 +1,4 @@
 import {useState} from 'react'
-import "./card.css";
 import FormDialog from "../dialog";
 
 interface IValues {

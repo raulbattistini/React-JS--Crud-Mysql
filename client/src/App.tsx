@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "React";
+import { useEffect, useState } from "react";
 import Axios from "axios";
 import React from "React";
 import Card from "./components/Card";
