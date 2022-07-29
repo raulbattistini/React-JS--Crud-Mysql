@@ -1,4 +1,4 @@
-import React from "react";
+import {useState} from 'react'
 import "./card.css";
 import FormDialog from "../dialog";
 
@@ -29,7 +29,7 @@ interface IList {
 }
 
 export default function Card(props: IList) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
