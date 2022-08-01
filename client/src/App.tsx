@@ -47,7 +47,7 @@ export default function App() {
 
 
   const loadPost = async () => {
-    const res = await api.get("/api/games");
+    const res = await api.get("/search");
     setPostData(res.data);
   };
 

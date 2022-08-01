@@ -1,4 +1,4 @@
-import express, { Request, Response, Result } from "express";
+import express, { Request, Response } from "express";
 
 const app = express();
 
@@ -12,48 +12,118 @@ var con = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "root",
-  database: "crudgames"
+  database: "crudgames",
 });
 
+app.post("/register", async (req: Request, res: Response) => {
+  con.connect(function (err: Error) {
+    if (err) throw err;
+    console.log("Connected!");
+  });
+  try {
+    const { name, cost, category } = req.body;
 
-
-app.get("/api/games", (req: Request, res: Response) => {
-  let SQL = "INSERT INTO games (  name, cost, category  ) VALUES ( 'FarCry5', '120', 'Acao' )"
-
-  con.query(SQL, (err, result)=>{
-   console.log(err)
-  })
-});
-
-app.post("/api/CreateGame", async (req: Request, res: Response) => {
-   con.connect(function (err) {
-      if (err) throw err;
-      console.log("Connected!");
+    let mysql = "INSERT INTO games ( name, cost, category) VALUES (?, ?, ?)";
+    con.query(mysql, [name, cost, category], (err: Error, response: Response) => {
+      res.send(response);
     });
+  } catch (e) {
+    res.status(500).json({
+      message: "Erro no Servidor " + e.error,
+    });
+  }
+});
 
-   try{
-      const {name, cost, category} = await req;
-      console.log(req);
-      const query = `INSERT INTO games (  name, cost, category  ) VALUES ( "teste", "action", "action" )`;
-      console.log(query);
+app.post("/search", async (req: Request, res: Response) => {
+  con.connect(function (err: Error) {
+    if (err) throw err;
+    console.log("Connected!");
+  });
+  try {
+    const { name, cost, category } = await req.body;
 
-      con.query(query,function (err: Error, result: Result) {
-         if (err) throw err;
-         console.log("1 record inserted");
-       });
+    let mysql =
+      "SELECT * from games WHERE name = ? AND cost = ? AND category = ?";
+    con.query(mysql, [name, cost, category], (err: Error, response: Response) => {
+      if (err) res.send(err);
+      res.send(response);
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: "Erro no Servidor " + e.error,
+    });
+  }
+});
 
-      const data = `SELECT name,cost,category FROM games WHERE name=${name},cost=${cost},category=${category} `;
+app.get("/getCards", async (req: Request, res: Response) => {
+  con.connect(function (err: Error) {
+    if (err) throw err;
+    console.log("Connected!");
+  });
+  try {
+    let mysql = "SELECT * FROM games";
+    con.query(mysql, (err: Error, response: Response) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(response);
+      }
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: "Erro no Servidor " + e.error,
+    });
+  }
+});
 
-      res.status(200).json({data});
+app.put("/edit", async (req: Request, res: Response) => {
+  con.connect(function (err: Error) {
+    if (err) throw err;
+    console.log("Connected!");
+  });
+  try {
+    const { id, name, cost, category } = await req.body;
+    let mysql =
+      "UPDATE games SET name = ?, cost = ?, category = ? WHERE id = ?";
+    con.query(
+      mysql,
+      [name, cost, category, id],
+      (err: Error, response: Response) => {
+        if (err) {
+          res.send(err);
+        } else {
+          res.send(response);
+        }
+      }
+    );
+  } catch (e) {
+    res.status(500).json({
+      message: "Erro no Servidor " + e.error,
+    });
+  }
+});
 
-   }catch(e){
-      res.status(500).json({
-         message: "Erro no Servidor " + e.error
-      })
-   }
-   
-})
-
+app.delete("/delete/:id", async (req: Request, res: Response) => {
+  con.connect(function (err: Error) {
+    if (err) throw err;
+    console.log("Connected!");
+  });
+  try {
+    const { id } = await req.params;
+    let mysql = "DELETE FROM games WHERE id = ?";
+    con.query(mysql, id, (err: Error, response: Response) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(response);
+      }
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: "Erro no Servidor " + e.error,
+    });
+  }
+});
 app.listen(3333, () => {
   console.log("Server is running on port 3333");
 });
